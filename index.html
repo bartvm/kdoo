@@ -15,22 +15,27 @@
             font-family: Arial, sans-serif;
             display: flex;
             flex-direction: column;
-            align-items: center; /* Center .game-container and .controls horizontally */
-            justify-content: center; /* Center content vertically */
-            height: 100vh; /* Set height to viewport height */
-            min-height: 100vh; /* Fallback for older browsers, ensure full height */
+            min-height: 100vh; /* Ensure body takes at least full viewport height */
             margin: 0;
-            padding: 0 10px; /* Add some padding to body to prevent content hitting edges */
+            padding: 20px 10px; /* Padding on body for spacing from viewport edges */
             color: #333;
             overflow-x: hidden; /* Prevent horizontal scrolling on body */
             overflow-y: hidden; /* Prevent vertical scrolling on body */
+        }
+
+        .main-content-area {
+            flex-grow: 1; /* Allows this area to take up available vertical space */
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* Vertically centers the .game-container */
+            align-items: center; /* Horizontally centers the .game-container */
+            width: 100%;
         }
 
         .game-container {
             display: flex;
             align-items: baseline; /* Align items based on their text baseline */
             justify-content: center; /* Center flex items (inputs, span) */
-            margin-bottom: 40px;
             width: 100%; /* Take full available width from parent */
             max-width: 700px; /* Optional: constrain max width on very large screens */
         }
@@ -45,9 +50,8 @@
             min-width: 0; /* Allow to shrink fully if needed by flexbox */
             flex-grow: 0; /* Don't grow beyond content */
             flex-shrink: 1; /* Allow to shrink */
-            color: #888; /* Grey color to match unsolved given letters - initial state */
+            color: #888; /* Grey color to match unsolved given letters - initial state (set by CSS) */
             font-weight: normal; /* Inputs are not bold initially */
-            /* Color transition removed for input to potentially fix iOS issue, color change will be instant */
             transition: font-weight 0.3s ease; 
             text-transform: uppercase; /* Ensure typed text is uppercase */
         }
@@ -75,33 +79,38 @@
             color: #888; /* Initial grey color */
             padding: 0 10px; /* Keep some padding */
             user-select: none;
-            transition: color 0.3s ease, font-weight 0.3s ease; /* Keep full transition for given letters */
-            text-transform: uppercase; /* Ensure given letters are also styled uppercase */
-            flex-shrink: 0; /* Prevent given letters from shrinking too much */
-            text-align: center; /* Ensure text within span is centered */
-            line-height: 1; /* Adjust line-height for potentially better baseline alignment with inputs */
+            transition: color 0.3s ease, font-weight 0.3s ease; 
+            text-transform: uppercase; 
+            flex-shrink: 0; 
+            text-align: center; 
+            line-height: 1; 
         }
 
-        /* --- Style for the SOLVED state --- */
-        /* Increased specificity and !important for input fields in solved state */
+        /* --- Style for the SOLVED state (CSS handles font-weight) --- */
         .game-container.solved #input-before,
         .game-container.solved #input-after {
-            color: #000 !important; /* Input text turns black, !important for iOS */
-            font-weight: bold; /* Input text turns bold */
-        }
-
-        .game-container.solved #given-letters {
-            color: #000; /* Given letters turn black */
+            /* color: #000 !important; JS will now primarily handle this for inputs */
             font-weight: bold; 
         }
 
+        .game-container.solved #given-letters {
+            color: #000; 
+            font-weight: bold; 
+        }
+
+        .controls-area {
+            width: 100%;
+            display: flex;
+            justify-content: center; /* Horizontally centers the .controls div */
+            margin-top: 20px; /* Add some space above the controls if main content is short */
+        }
 
         .controls {
             display: flex;
-            justify-content: center; /* Center buttons within the controls div */
+            justify-content: center; 
             gap: 15px;
-            width: 100%; /* Take full available width */
-            max-width: 700px; /* Optional: same as game-container */
+            width: 100%; 
+            max-width: 700px; 
         }
 
         .button {
@@ -110,12 +119,12 @@
             border: 1px solid #ccc;
             border-radius: 5px;
             background-color: #fff;
-            color: #333; /* Explicitly set button text color */
+            color: #333; 
             cursor: pointer;
             transition: background-color 0.2s ease, box-shadow 0.2s ease;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            -webkit-appearance: none; /* Attempt to remove default iOS button styling */
-            appearance: none; /* Attempt to remove default button styling */
+            -webkit-appearance: none; 
+            appearance: none; 
         }
 
         .button:hover {
@@ -131,35 +140,41 @@
         /* Mobile responsiveness adjustments */
         @media (max-width: 600px) {
             body {
-                padding: 0 5px; /* Reduce body padding on smaller screens */
+                padding: 15px 5px; 
             }
             .input-text, #given-letters {
-                font-size: 1.5em; /* Further reduce font size for small screens to prevent overflow */
+                font-size: 1.5em; 
             }
             #given-letters {
-                 padding: 0 5px; /* Reduce padding around given letters */
+                 padding: 0 5px; 
             }
             
-            .game-container {
-                margin-bottom: 30px; /* Adjust margin */
+            .controls-area {
+                 margin-top: 20px; 
             }
              .controls {
                 flex-direction: column; 
-                align-items: center; /* This centers buttons when stacked */
-                gap: 10px; /* Adjust gap for stacked buttons */
+                align-items: center; 
+                gap: 10px; 
             }
             .button {
-                width: 90%; /* Make buttons a bit wider relative to controls container */
+                width: 90%; 
                 max-width: 280px; 
             }
         }
         /* Even smaller screens adjustments */
         @media (max-width: 360px) {
+            body {
+                padding: 10px 5px; 
+            }
              .input-text, #given-letters {
-                font-size: 1.3em; /* Even smaller font for very narrow screens */
+                font-size: 1.3em; 
             }
             #given-letters {
                  padding: 0 3px;
+            }
+             .controls-area {
+                 margin-top: 15px; 
             }
         }
 
@@ -167,16 +182,20 @@
 </head>
 <body>
 
-    <div class="game-container">
-        <input type="text" id="input-before" class="input-text" placeholder="">
-        <span id="given-letters"></span>
-        <input type="text" id="input-after" class="input-text" placeholder="">
+    <div class="main-content-area">
+        <div class="game-container">
+            <input type="text" id="input-before" class="input-text" placeholder="">
+            <span id="given-letters"></span>
+            <input type="text" id="input-after" class="input-text" placeholder="">
+        </div>
     </div>
 
-    <div class="controls">
-        <button id="new-button" class="button">New</button>
-        <button id="reset-button" class="button">Reset</button>
-        <button id="solution-button" class="button">Solution</button>
+    <div class="controls-area">
+        <div class="controls">
+            <button id="new-button" class="button">New</button>
+            <button id="reset-button" class="button">Reset</button>
+            <button id="solution-button" class="button">Solution</button>
+        </div>
     </div>
 
     <script>
@@ -249,8 +268,13 @@
                 }
                 gameContainer.classList.remove('solved'); 
                 givenLettersSpan.textContent = currentProblem.given.toUpperCase(); 
+                
+                // Reset input field styles and values
                 inputBefore.value = '';
                 inputAfter.value = '';
+                inputBefore.style.color = '#888'; // JS explicitly sets initial/reset color
+                inputAfter.style.color = '#888';  // JS explicitly sets initial/reset color
+                
                 inputBefore.placeholder = '...'; 
                 inputAfter.placeholder = '...';  
                 inputBefore.disabled = false;
@@ -272,16 +296,26 @@
                 if (formedWord === solutionText) {
                     if (!isSolved) { 
                         gameContainer.classList.add('solved'); 
+                        inputBefore.style.color = '#000'; // JS explicitly sets solved color
+                        inputAfter.style.color = '#000';  // JS explicitly sets solved color
                         isSolved = true;
                         inputBefore.disabled = true;
                         inputAfter.disabled = true;
                     }
                 } else {
-                    if (isSolved) { 
+                    if (isSolved) { // If it was solved, but now it's not
                         gameContainer.classList.remove('solved'); 
+                        inputBefore.style.color = '#888'; // JS explicitly resets color
+                        inputAfter.style.color = '#888';  // JS explicitly resets color
                         isSolved = false;
                         inputBefore.disabled = false;
                         inputAfter.disabled = false;
+                    }
+                    // If not solved and wasn't solved before, colors are already grey (or set by initializeGame)
+                    // However, to be safe, ensure grey if not solved:
+                    else if (!isSolved && (inputBefore.style.color !== '#888' || inputAfter.style.color !== '#888')) {
+                         inputBefore.style.color = '#888';
+                         inputAfter.style.color = '#888';
                     }
                 }
             }
@@ -305,7 +339,7 @@
                     inputBefore.value = '';
                     inputAfter.value = solution;
                 }
-                checkInput(); 
+                checkInput(); // This will now also handle color styling via JS
             });
 
             // --- Start the game by selecting the first problem ---
