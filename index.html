@@ -46,7 +46,7 @@
             min-width: 0; /* Allow to shrink fully if needed by flexbox */
             flex-grow: 0; /* Don't grow beyond content */
             flex-shrink: 1; /* Allow to shrink */
-            color: #000; /* All text is black by default */
+            color: #333; /* All text is dark gray by default */
             font-weight: normal; /* Inputs are not bold initially */
             transition: font-weight 0.3s ease; 
             text-transform: uppercase; /* Ensure typed text is uppercase */
@@ -71,8 +71,8 @@
 
         #given-letters {
             font-size: 2.5em;
-            font-weight: bold; /* Given letters are always black and bold */
-            color: #000; /* All text is black by default */
+            font-weight: bold; /* Given letters are always dark gray and bold */
+            color: #333; /* All text is dark gray by default */
             padding: 0 10px; /* Keep some padding */
             user-select: none;
             /* No transition needed as it doesn't change style on solve */
@@ -86,10 +86,10 @@
         .game-container.solved #input-before,
         .game-container.solved #input-after {
             font-weight: bold; /* Input text becomes bold */
-            /* Color is already black */
+            /* Color is already dark gray */
         }
 
-        /* .game-container.solved #given-letters style removed as it's already black and bold */
+        /* .game-container.solved #given-letters style removed as it's already dark gray and bold */
         
         /* Removed .controls-area */
 
