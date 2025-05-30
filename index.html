@@ -26,7 +26,7 @@
 
         .game-container {
             display: flex;
-            align-items: center;
+            align-items: baseline; /* Align items based on their text baseline */
             justify-content: center; /* Center flex items (inputs, span) */
             margin-bottom: 40px;
             width: 100%; /* Take full available width from parent */
@@ -45,7 +45,8 @@
             flex-shrink: 1; /* Allow to shrink */
             color: #888; /* Grey color to match unsolved given letters */
             font-weight: normal; /* Inputs are not bold initially */
-            transition: color 0.3s ease, font-weight 0.3s ease; /* Smooth transition for color and weight */
+            /* Color transition removed for input to potentially fix iOS issue, color change will be instant */
+            transition: font-weight 0.3s ease; 
             text-transform: uppercase; /* Ensure typed text is uppercase */
         }
 
@@ -72,10 +73,11 @@
             color: #888;
             padding: 0 10px; /* Keep some padding */
             user-select: none;
-            transition: color 0.3s ease, font-weight 0.3s ease; /* Added font-weight to transition */
+            transition: color 0.3s ease, font-weight 0.3s ease; /* Keep full transition for given letters */
             text-transform: uppercase; /* Ensure given letters are also styled uppercase */
             flex-shrink: 0; /* Prevent given letters from shrinking too much */
             text-align: center; /* Ensure text within span is centered */
+            line-height: 1; /* Adjust line-height for potentially better baseline alignment with inputs */
         }
 
         /* --- Style for the SOLVED state --- */
@@ -126,7 +128,6 @@
             #given-letters {
                  padding: 0 5px; /* Reduce padding around given letters */
             }
-            /* .input-text min-width: 0; is already global and suitable */
             
             .game-container {
                 margin-bottom: 30px; /* Adjust margin */
@@ -232,7 +233,6 @@
             // --- Initialize Game for the currentProblem ---
             function initializeGame() {
                 if (!currentProblem) {
-                    // This case should ideally be handled by selectNewProblem being called first
                     if (problemsList.length > 0) selectNewProblem();
                     return;
                 }
