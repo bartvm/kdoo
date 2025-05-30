@@ -35,6 +35,7 @@
             color: #888; /* Grey color to match unsolved given letters */
             font-weight: normal; /* Inputs are not bold initially */
             transition: all 0.3s ease;
+            text-transform: uppercase; /* Ensure typed text is uppercase */
         }
 
         #input-before {
@@ -47,6 +48,7 @@
 
         .input-text::placeholder {
             color: #ccc;
+            text-transform: none; /* Keep placeholder as is, if needed */
         }
         
         .input-text:focus {
@@ -60,6 +62,7 @@
             padding: 0 10px;
             user-select: none;
             transition: color 0.3s ease;
+            text-transform: uppercase; /* Ensure given letters are also styled uppercase */
         }
 
         /* --- Style for the SOLVED state --- */
@@ -108,8 +111,8 @@
                  min-width: 30px;
             }
             .game-container {
-                flex-wrap: wrap; 
-                justify-content: center;
+                /* removed flex-wrap: wrap; to keep elements inline */
+                justify-content: center; 
             }
              .controls {
                 flex-direction: column; 
@@ -208,13 +211,15 @@
             // --- Initialize Game for the currentProblem ---
             function initializeGame() {
                 if (!currentProblem) {
-                    selectNewProblem();
+                    selectNewProblem(); // Try to select a problem if none is set
                     return;
                 }
                 gameContainer.classList.remove('solved'); // Remove solved state
-                givenLettersSpan.textContent = currentProblem.given;
+                // Ensure given letters are displayed in uppercase from the start
+                givenLettersSpan.textContent = currentProblem.given.toUpperCase(); 
                 inputBefore.value = '';
                 inputAfter.value = '';
+                // Placeholders are intentionally subtle and might not need uppercase
                 inputBefore.placeholder = '...'; 
                 inputAfter.placeholder = '...';  
                 inputBefore.disabled = false;
@@ -225,25 +230,32 @@
 
             // --- Check Input ---
             function checkInput() {
-                if (isSolved || !currentProblem) return; 
+                if (!currentProblem) return; // Don't check if no problem is loaded
 
+                // Values are already visually uppercased by CSS, 
+                // but JS logic still needs .toUpperCase() for reliable comparison
                 const beforeText = inputBefore.value.toUpperCase();
                 const afterText = inputAfter.value.toUpperCase();
-                const givenText = currentProblem.given.toUpperCase();
+                // Given text is already set to uppercase in initializeGame and by CSS
+                const givenText = currentProblem.given.toUpperCase(); 
                 const solutionText = currentProblem.solution.toUpperCase();
 
                 const formedWord = beforeText + givenText + afterText;
 
                 if (formedWord === solutionText) {
-                    gameContainer.classList.add('solved'); // Add solved class to container
-                    isSolved = true;
-                    inputBefore.disabled = true;
-                    inputAfter.disabled = true;
+                    if (!isSolved) { // Only update if state changes
+                        gameContainer.classList.add('solved'); 
+                        isSolved = true;
+                        inputBefore.disabled = true;
+                        inputAfter.disabled = true;
+                    }
                 } else {
-                    gameContainer.classList.remove('solved'); // Remove solved class
-                    isSolved = false;
-                    inputBefore.disabled = false;
-                    inputAfter.disabled = false;
+                    if (isSolved) { // Only update if state changes
+                        gameContainer.classList.remove('solved'); 
+                        isSolved = false;
+                        inputBefore.disabled = false;
+                        inputAfter.disabled = false;
+                    }
                 }
             }
 
@@ -265,13 +277,13 @@
                 if (indexOfGiven !== -1) {
                     inputBefore.value = solution.substring(0, indexOfGiven);
                     inputAfter.value = solution.substring(indexOfGiven + given.length);
+                } else {
+                    // Fallback, though problem configuration should prevent this
+                    inputBefore.value = '';
+                    inputAfter.value = solution;
                 }
-                isSolved = false;
-                checkInput();
-                if (isSolved) {
-                    inputBefore.disabled = true;
-                    inputAfter.disabled = true;
-                }
+                // isSolved = false; // This will be handled by checkInput
+                checkInput(); // This will set the solved state and disable inputs if correct
             });
 
             // --- Start the game by selecting the first problem ---
