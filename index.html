@@ -5,23 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KDOO Game</title>
     <style>
+        /* Global reset for box-sizing */
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             background-color: #f8f8f0; /* Off-white */
             font-family: Arial, sans-serif;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            align-items: center; /* Center .game-container and .controls horizontally */
+            justify-content: center; /* Center content vertically */
             min-height: 100vh;
             margin: 0;
+            padding: 0 10px; /* Add some padding to body to prevent content hitting edges */
             color: #333;
+            overflow-x: hidden; /* Prevent horizontal scrolling on body */
         }
 
         .game-container {
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: center; /* Center flex items (inputs, span) */
             margin-bottom: 40px;
+            width: 100%; /* Take full available width from parent */
+            max-width: 700px; /* Optional: constrain max width on very large screens */
         }
 
         .input-text {
@@ -30,11 +39,13 @@
             background-color: transparent;
             outline: none;
             padding: 5px;
-            width: auto;
-            min-width: 50px;
+            width: auto; /* Size to content */
+            min-width: 0; /* Allow to shrink fully if needed by flexbox */
+            flex-grow: 0; /* Don't grow beyond content */
+            flex-shrink: 1; /* Allow to shrink */
             color: #888; /* Grey color to match unsolved given letters */
             font-weight: normal; /* Inputs are not bold initially */
-            transition: all 0.3s ease;
+            transition: color 0.3s ease, font-weight 0.3s ease; /* Smooth transition for color and weight */
             text-transform: uppercase; /* Ensure typed text is uppercase */
         }
 
@@ -59,10 +70,12 @@
             font-size: 2.5em;
             font-weight: bold; /* Given letters are always bold */
             color: #888;
-            padding: 0 10px;
+            padding: 0 10px; /* Keep some padding */
             user-select: none;
-            transition: color 0.3s ease;
+            transition: color 0.3s ease, font-weight 0.3s ease; /* Added font-weight to transition */
             text-transform: uppercase; /* Ensure given letters are also styled uppercase */
+            flex-shrink: 0; /* Prevent given letters from shrinking too much */
+            text-align: center; /* Ensure text within span is centered */
         }
 
         /* --- Style for the SOLVED state --- */
@@ -75,7 +88,10 @@
 
         .controls {
             display: flex;
+            justify-content: center; /* Center buttons within the controls div */
             gap: 15px;
+            width: 100%; /* Take full available width */
+            max-width: 700px; /* Optional: same as game-container */
         }
 
         .button {
@@ -101,32 +117,37 @@
 
         /* Mobile responsiveness adjustments */
         @media (max-width: 600px) {
+            body {
+                padding: 0 5px; /* Reduce body padding on smaller screens */
+            }
             .input-text, #given-letters {
-                font-size: 1.8em;
+                font-size: 1.5em; /* Further reduce font size for small screens to prevent overflow */
             }
-             #given-letters {
-                 padding: 0 5px;
-             }
-            .input-text {
-                 min-width: 30px;
+            #given-letters {
+                 padding: 0 5px; /* Reduce padding around given letters */
             }
+            /* .input-text min-width: 0; is already global and suitable */
+            
             .game-container {
-                /* removed flex-wrap: wrap; to keep elements inline */
-                justify-content: center; 
+                margin-bottom: 30px; /* Adjust margin */
             }
              .controls {
                 flex-direction: column; 
-                align-items: center;
-                width: 100%;
+                align-items: center; /* This centers buttons when stacked */
+                gap: 10px; /* Adjust gap for stacked buttons */
             }
             .button {
-                width: 80%;
-                max-width: 200px;
-                text-align: center;
-                margin-bottom: 10px;
+                width: 90%; /* Make buttons a bit wider relative to controls container */
+                max-width: 280px; 
             }
-            .controls .button:last-child {
-                 margin-bottom: 0;
+        }
+        /* Even smaller screens adjustments */
+        @media (max-width: 360px) {
+             .input-text, #given-letters {
+                font-size: 1.3em; /* Even smaller font for very narrow screens */
+            }
+            #given-letters {
+                 padding: 0 3px;
             }
         }
 
@@ -178,7 +199,7 @@
             let currentProblemIndex = -1;
 
             // --- DOM Elements ---
-            const gameContainer = document.querySelector('.game-container'); // Get the parent container
+            const gameContainer = document.querySelector('.game-container'); 
             const inputBefore = document.getElementById('input-before');
             const givenLettersSpan = document.getElementById('given-letters');
             const inputAfter = document.getElementById('input-after');
@@ -201,7 +222,7 @@
                 } else {
                     do {
                         newIndex = Math.floor(Math.random() * problemsList.length);
-                    } while (newIndex === currentProblemIndex);
+                    } while (newIndex === currentProblemIndex && problemsList.length > 1);
                 }
                 currentProblemIndex = newIndex;
                 currentProblem = problemsList[currentProblemIndex];
@@ -211,15 +232,14 @@
             // --- Initialize Game for the currentProblem ---
             function initializeGame() {
                 if (!currentProblem) {
-                    selectNewProblem(); // Try to select a problem if none is set
+                    // This case should ideally be handled by selectNewProblem being called first
+                    if (problemsList.length > 0) selectNewProblem();
                     return;
                 }
-                gameContainer.classList.remove('solved'); // Remove solved state
-                // Ensure given letters are displayed in uppercase from the start
+                gameContainer.classList.remove('solved'); 
                 givenLettersSpan.textContent = currentProblem.given.toUpperCase(); 
                 inputBefore.value = '';
                 inputAfter.value = '';
-                // Placeholders are intentionally subtle and might not need uppercase
                 inputBefore.placeholder = '...'; 
                 inputAfter.placeholder = '...';  
                 inputBefore.disabled = false;
@@ -230,27 +250,23 @@
 
             // --- Check Input ---
             function checkInput() {
-                if (!currentProblem) return; // Don't check if no problem is loaded
+                if (!currentProblem) return; 
 
-                // Values are already visually uppercased by CSS, 
-                // but JS logic still needs .toUpperCase() for reliable comparison
                 const beforeText = inputBefore.value.toUpperCase();
                 const afterText = inputAfter.value.toUpperCase();
-                // Given text is already set to uppercase in initializeGame and by CSS
                 const givenText = currentProblem.given.toUpperCase(); 
                 const solutionText = currentProblem.solution.toUpperCase();
-
                 const formedWord = beforeText + givenText + afterText;
 
                 if (formedWord === solutionText) {
-                    if (!isSolved) { // Only update if state changes
+                    if (!isSolved) { 
                         gameContainer.classList.add('solved'); 
                         isSolved = true;
                         inputBefore.disabled = true;
                         inputAfter.disabled = true;
                     }
                 } else {
-                    if (isSolved) { // Only update if state changes
+                    if (isSolved) { 
                         gameContainer.classList.remove('solved'); 
                         isSolved = false;
                         inputBefore.disabled = false;
@@ -262,13 +278,10 @@
             // --- Event Listeners ---
             inputBefore.addEventListener('input', checkInput);
             inputAfter.addEventListener('input', checkInput);
-
             newButton.addEventListener('click', selectNewProblem);
-
             resetButton.addEventListener('click', () => {
                 if (currentProblem) initializeGame();
             });
-
             solutionButton.addEventListener('click', () => {
                 if (!currentProblem) return;
                 const solution = currentProblem.solution;
@@ -278,12 +291,10 @@
                     inputBefore.value = solution.substring(0, indexOfGiven);
                     inputAfter.value = solution.substring(indexOfGiven + given.length);
                 } else {
-                    // Fallback, though problem configuration should prevent this
                     inputBefore.value = '';
                     inputAfter.value = solution;
                 }
-                // isSolved = false; // This will be handled by checkInput
-                checkInput(); // This will set the solved state and disable inputs if correct
+                checkInput(); 
             });
 
             // --- Start the game by selecting the first problem ---
