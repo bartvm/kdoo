@@ -17,11 +17,13 @@
             flex-direction: column;
             align-items: center; /* Center .game-container and .controls horizontally */
             justify-content: center; /* Center content vertically */
-            min-height: 100vh;
+            height: 100vh; /* Set height to viewport height */
+            min-height: 100vh; /* Fallback for older browsers, ensure full height */
             margin: 0;
             padding: 0 10px; /* Add some padding to body to prevent content hitting edges */
             color: #333;
             overflow-x: hidden; /* Prevent horizontal scrolling on body */
+            overflow-y: hidden; /* Prevent vertical scrolling on body */
         }
 
         .game-container {
@@ -81,16 +83,15 @@
         }
 
         /* --- Style for the SOLVED state --- */
-        /* Increased specificity for input fields in solved state */
+        /* Increased specificity and !important for input fields in solved state */
         .game-container.solved #input-before,
         .game-container.solved #input-after {
-            color: #000; /* Input text turns black */
+            color: #000 !important; /* Input text turns black, !important for iOS */
             font-weight: bold; /* Input text turns bold */
         }
 
         .game-container.solved #given-letters {
             color: #000; /* Given letters turn black */
-            /* font-weight: bold; is already the default for #given-letters, but reiterated here for clarity in solved state */
             font-weight: bold; 
         }
 
@@ -109,9 +110,12 @@
             border: 1px solid #ccc;
             border-radius: 5px;
             background-color: #fff;
+            color: #333; /* Explicitly set button text color */
             cursor: pointer;
             transition: background-color 0.2s ease, box-shadow 0.2s ease;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            -webkit-appearance: none; /* Attempt to remove default iOS button styling */
+            appearance: none; /* Attempt to remove default button styling */
         }
 
         .button:hover {
