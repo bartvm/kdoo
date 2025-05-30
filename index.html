@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KDOO Game</title>
+    <style>
+        body {
+            background-color: #f8f8f0; /* Off-white */
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            color: #333;
+        }
+
+        .game-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+
+        .input-text {
+            font-size: 2.5em;
+            border: none;
+            background-color: transparent;
+            outline: none;
+            padding: 5px;
+            width: auto;
+            min-width: 50px;
+            color: #888; /* Grey color to match unsolved given letters */
+            font-weight: normal; /* Inputs are not bold initially */
+            transition: all 0.3s ease;
+        }
+
+        #input-before {
+            text-align: right;
+        }
+
+        #input-after {
+            text-align: left;
+        }
+
+        .input-text::placeholder {
+            color: #ccc;
+        }
+        
+        .input-text:focus {
+             caret-color: #333; /* Keep caret visible */
+        }
+
+        #given-letters {
+            font-size: 2.5em;
+            font-weight: bold; /* Given letters are always bold */
+            color: #888;
+            padding: 0 10px;
+            user-select: none;
+            transition: color 0.3s ease;
+        }
+
+        /* --- Style for the SOLVED state --- */
+        .game-container.solved .input-text,
+        .game-container.solved #given-letters {
+            color: #000; /* All letters turn black */
+            font-weight: bold; /* All letters turn bold */
+        }
+
+
+        .controls {
+            display: flex;
+            gap: 15px;
+        }
+
+        .button {
+            padding: 10px 20px;
+            font-size: 1em;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #fff;
+            cursor: pointer;
+            transition: background-color 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .button:hover {
+            background-color: #f0f0f0;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        .button:active {
+            background-color: #e0e0e0;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        /* Mobile responsiveness adjustments */
+        @media (max-width: 600px) {
+            .input-text, #given-letters {
+                font-size: 1.8em;
+            }
+             #given-letters {
+                 padding: 0 5px;
+             }
+            .input-text {
+                 min-width: 30px;
+            }
+            .game-container {
+                flex-wrap: wrap; 
+                justify-content: center;
+            }
+             .controls {
+                flex-direction: column; 
+                align-items: center;
+                width: 100%;
+            }
+            .button {
+                width: 80%;
+                max-width: 200px;
+                text-align: center;
+                margin-bottom: 10px;
+            }
+            .controls .button:last-child {
+                 margin-bottom: 0;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <input type="text" id="input-before" class="input-text" placeholder="">
+        <span id="given-letters"></span>
+        <input type="text" id="input-after" class="input-text" placeholder="">
+    </div>
+
+    <div class="controls">
+        <button id="new-button" class="button">New</button>
+        <button id="reset-button" class="button">Reset</button>
+        <button id="solution-button" class="button">Solution</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- List of all available problems ---
+            const problemsList = [
+                { given: "RLDW", solution: "WORLDWIDE" },
+                { given: "ETPL", solution: "MARKETPLACE" }
+            ];
+
+            let currentProblem = null;
+            let currentProblemIndex = -1;
+
+            // --- DOM Elements ---
+            const gameContainer = document.querySelector('.game-container'); // Get the parent container
+            const inputBefore = document.getElementById('input-before');
+            const givenLettersSpan = document.getElementById('given-letters');
+            const inputAfter = document.getElementById('input-after');
+            const newButton = document.getElementById('new-button');
+            const resetButton = document.getElementById('reset-button');
+            const solutionButton = document.getElementById('solution-button');
+
+            // --- Game State ---
+            let isSolved = false;
+
+            // --- Select a New Problem ---
+            function selectNewProblem() {
+                if (problemsList.length === 0) {
+                    givenLettersSpan.textContent = "Error";
+                    return;
+                }
+                let newIndex;
+                if (problemsList.length === 1) {
+                    newIndex = 0;
+                } else {
+                    do {
+                        newIndex = Math.floor(Math.random() * problemsList.length);
+                    } while (newIndex === currentProblemIndex);
+                }
+                currentProblemIndex = newIndex;
+                currentProblem = problemsList[currentProblemIndex];
+                initializeGame();
+            }
+
+            // --- Initialize Game for the currentProblem ---
+            function initializeGame() {
+                if (!currentProblem) {
+                    selectNewProblem();
+                    return;
+                }
+                gameContainer.classList.remove('solved'); // Remove solved state
+                givenLettersSpan.textContent = currentProblem.given;
+                inputBefore.value = '';
+                inputAfter.value = '';
+                inputBefore.placeholder = '...'; 
+                inputAfter.placeholder = '...';  
+                inputBefore.disabled = false;
+                inputAfter.disabled = false;
+                inputBefore.focus(); 
+                isSolved = false;
+            }
+
+            // --- Check Input ---
+            function checkInput() {
+                if (isSolved || !currentProblem) return; 
+
+                const beforeText = inputBefore.value.toUpperCase();
+                const afterText = inputAfter.value.toUpperCase();
+                const givenText = currentProblem.given.toUpperCase();
+                const solutionText = currentProblem.solution.toUpperCase();
+
+                const formedWord = beforeText + givenText + afterText;
+
+                if (formedWord === solutionText) {
+                    gameContainer.classList.add('solved'); // Add solved class to container
+                    isSolved = true;
+                    inputBefore.disabled = true;
+                    inputAfter.disabled = true;
+                } else {
+                    gameContainer.classList.remove('solved'); // Remove solved class
+                    isSolved = false;
+                    inputBefore.disabled = false;
+                    inputAfter.disabled = false;
+                }
+            }
+
+            // --- Event Listeners ---
+            inputBefore.addEventListener('input', checkInput);
+            inputAfter.addEventListener('input', checkInput);
+
+            newButton.addEventListener('click', selectNewProblem);
+
+            resetButton.addEventListener('click', () => {
+                if (currentProblem) initializeGame();
+            });
+
+            solutionButton.addEventListener('click', () => {
+                if (!currentProblem) return;
+                const solution = currentProblem.solution;
+                const given = currentProblem.given;
+                const indexOfGiven = solution.toUpperCase().indexOf(given.toUpperCase());
+                if (indexOfGiven !== -1) {
+                    inputBefore.value = solution.substring(0, indexOfGiven);
+                    inputAfter.value = solution.substring(indexOfGiven + given.length);
+                }
+                isSolved = false;
+                checkInput();
+                if (isSolved) {
+                    inputBefore.disabled = true;
+                    inputAfter.disabled = true;
+                }
+            });
+
+            // --- Start the game by selecting the first problem ---
+            selectNewProblem(); 
+        });
+    </script>
+</body>
+</html>
