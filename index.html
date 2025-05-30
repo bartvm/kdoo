@@ -43,7 +43,7 @@
             min-width: 0; /* Allow to shrink fully if needed by flexbox */
             flex-grow: 0; /* Don't grow beyond content */
             flex-shrink: 1; /* Allow to shrink */
-            color: #888; /* Grey color to match unsolved given letters */
+            color: #888; /* Grey color to match unsolved given letters - initial state */
             font-weight: normal; /* Inputs are not bold initially */
             /* Color transition removed for input to potentially fix iOS issue, color change will be instant */
             transition: font-weight 0.3s ease; 
@@ -70,7 +70,7 @@
         #given-letters {
             font-size: 2.5em;
             font-weight: bold; /* Given letters are always bold */
-            color: #888;
+            color: #888; /* Initial grey color */
             padding: 0 10px; /* Keep some padding */
             user-select: none;
             transition: color 0.3s ease, font-weight 0.3s ease; /* Keep full transition for given letters */
@@ -81,10 +81,17 @@
         }
 
         /* --- Style for the SOLVED state --- */
-        .game-container.solved .input-text,
+        /* Increased specificity for input fields in solved state */
+        .game-container.solved #input-before,
+        .game-container.solved #input-after {
+            color: #000; /* Input text turns black */
+            font-weight: bold; /* Input text turns bold */
+        }
+
         .game-container.solved #given-letters {
-            color: #000; /* All letters turn black */
-            font-weight: bold; /* All letters turn bold */
+            color: #000; /* Given letters turn black */
+            /* font-weight: bold; is already the default for #given-letters, but reiterated here for clarity in solved state */
+            font-weight: bold; 
         }
 
 
