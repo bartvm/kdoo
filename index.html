@@ -7,7 +7,7 @@
     <!-- Google Fonts: Montserrat -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
     <style>
         /* --- CSS Variables --- */
         :root {
@@ -17,7 +17,6 @@
             --color-text-title: #4a4a4a;
             --color-light-gray: #ccc;
             --color-white: #fff;
-            --font-weight-medium: 500;
             --font-weight-semibold: 600;
         }
 
@@ -80,7 +79,6 @@
             color: var(--color-text-default);
             -webkit-text-fill-color: var(--color-text-default);
             opacity: 1;
-            border-bottom-color: transparent; /* Hide underline when disabled */
         }
         
         /* --- State Changes --- */
@@ -127,30 +125,9 @@
         @media (max-width: 600px) {
             .title {
                 font-size: 2.5em;
-                margin-bottom: 40px;
             }
             .word-input {
                 font-size: 1.5em; 
-            }
-            .game-container {
-                margin-bottom: 40px;
-            }
-            .controls {
-                flex-direction: column; 
-                align-items: center; 
-                gap: 12px; 
-            }
-            .button {
-                width: 90%; 
-                max-width: 280px; 
-            }
-        }
-        @media (max-width: 360px) {
-            .title {
-                font-size: 2em;
-            }
-             .word-input {
-                font-size: 1.3em; 
             }
         }
     </style>
