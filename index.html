@@ -15,6 +15,7 @@
             --color-bg: #f8f8f0;
             --color-text-default: #333;
             --color-text-title: #4a4a4a;
+            --color-text-given: #1a1a1a;
             --color-light-gray: #ccc;
             --color-white: #fff;
             --font-weight-medium: 500;
@@ -60,7 +61,6 @@
         }
 
         .input-text {
-            font-family: var(--font-primary);
             font-size: 2.5em;
             border: none;
             border-bottom: 3px solid transparent;
@@ -87,6 +87,8 @@
 
         .input-text:disabled {
             color: var(--color-text-default);
+            -webkit-text-fill-color: var(--color-text-default); /* Enforce color on iOS */
+            opacity: 1; /* Prevent dimming */
         }
 
         #given-letters {
@@ -117,22 +119,38 @@
             font-size: 1em;
             font-weight: var(--font-weight-semibold);
             background-color: var(--color-white);
+            color: var(--color-text-default); /* Explicitly set color for iOS */
             padding: 12px 24px;
             border: none;
             border-radius: 8px;
             cursor: pointer;
             transition: transform 0.2s ease, box-shadow 0.2s ease;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            -webkit-tap-highlight-color: transparent; /* Remove tap highlight on iOS */
         }
 
-        .button:hover {
-            box-shadow: 0 7px 14px rgba(0,0,0,0.1);
-            transform: translateY(-2px);
-        }
-        
+        /* Tap feedback for all devices */
         .button:active {
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             transform: translateY(1px);
+        }
+
+        /* Hover feedback only for devices that support it */
+        @media (hover: hover) {
+            .button:hover {
+                box-shadow: 0 7px 14px rgba(0,0,0,0.1);
+                transform: translateY(-2px);
+            }
+        }
+
+        /* --- Mobile Responsiveness --- */
+        @media (max-width: 600px) {
+            .title {
+                font-size: 2.5em;
+            }
+            .input-text, #given-letters {
+                font-size: 1.5em; 
+            }
         }
     </style>
 </head>
