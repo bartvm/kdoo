@@ -25,8 +25,6 @@
             overflow-y: hidden; /* Prevent vertical scrolling on body */
         }
 
-        /* Removed .main-content-area */
-
         .game-container {
             display: flex;
             align-items: baseline; /* Align items based on their text baseline */
@@ -52,6 +50,14 @@
             text-transform: uppercase; /* Ensure typed text is uppercase */
         }
 
+        /* --- FIX FOR iOS --- */
+        /* Explicitly set color for disabled state to override iOS default graying */
+        .input-text:disabled {
+            color: #333;
+            -webkit-text-fill-color: #333; /* Ensures text color is applied on Safari/iOS */
+            opacity: 1; /* Prevents the browser from dimming the text */
+        }
+
         #input-before {
             text-align: right;
         }
@@ -75,7 +81,6 @@
             color: #333; /* All text is dark gray by default */
             padding: 0 10px; /* Keep some padding */
             user-select: none;
-            /* No transition needed as it doesn't change style on solve */
             text-transform: uppercase; 
             flex-shrink: 0; 
             text-align: center; 
@@ -86,13 +91,8 @@
         .game-container.solved #input-before,
         .game-container.solved #input-after {
             font-weight: bold; /* Input text becomes bold */
-            /* Color is already dark gray */
         }
-
-        /* .game-container.solved #given-letters style removed as it's already dark gray and bold */
         
-        /* Removed .controls-area */
-
         .controls {
             display: flex;
             justify-content: center; 
@@ -253,7 +253,6 @@
                 
                 inputBefore.value = '';
                 inputAfter.value = '';
-                // Removed JS color styling for inputs
                 
                 inputBefore.placeholder = '...'; 
                 inputAfter.placeholder = '...';  
@@ -276,7 +275,6 @@
                 if (formedWord === solutionText) {
                     if (!isSolved) { 
                         gameContainer.classList.add('solved'); 
-                        // Removed JS color styling for inputs
                         isSolved = true;
                         inputBefore.disabled = true;
                         inputAfter.disabled = true;
@@ -284,12 +282,10 @@
                 } else {
                     if (isSolved) { // If it was solved, but now it's not
                         gameContainer.classList.remove('solved'); 
-                        // Removed JS color styling for inputs
                         isSolved = false;
                         inputBefore.disabled = false;
                         inputAfter.disabled = false;
                     }
-                    // Removed JS color styling checks for inputs
                 }
             }
 
