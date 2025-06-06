@@ -15,7 +15,6 @@
             --color-bg: #f8f8f0;
             --color-text-default: #333;
             --color-text-title: #4a4a4a;
-            --color-text-given: #1a1a1a;
             --color-light-gray: #ccc;
             --color-white: #fff;
             --font-weight-medium: 500;
@@ -53,58 +52,40 @@
         /* --- Game Area --- */
         .game-container {
             display: flex;
-            align-items: baseline;
             justify-content: center;
             width: 100%;
-            max-width: 700px;
+            max-width: 90vw; /* Allow it to be wide */
             margin-bottom: 80px;
         }
 
-        .input-text {
+        .word-input {
             font-size: 2.5em;
             font-family: var(--font-primary);
+            width: 100%;
+            text-align: center;
             border: none;
             border-bottom: 3px solid transparent;
             background-color: transparent;
             outline: none;
-            padding: 0;
-            width: auto;
-            min-width: 0;
             transition: border-color 0.3s ease;
             text-transform: uppercase;
         }
-
-        #input-before { text-align: right; }
-        #input-after { text-align: left; }
-
-        .input-text::placeholder {
-            color: var(--color-light-gray);
-        }
         
-        .input-text:focus {
+        .word-input:focus {
              caret-color: var(--color-text-default);
              border-bottom-color: var(--color-light-gray);
         }
 
-        .input-text:disabled {
+        .word-input:disabled {
             color: var(--color-text-default);
-            -webkit-text-fill-color: var(--color-text-default); /* Enforce color on iOS */
-            opacity: 1; /* Prevent dimming */
+            -webkit-text-fill-color: var(--color-text-default);
+            opacity: 1;
+            border-bottom-color: transparent; /* Hide underline when disabled */
         }
-
-        #given-letters {
-            font-size: 2.5em;
-            padding: 0;
-            user-select: none;
-            text-transform: uppercase;
-            flex-shrink: 0;
-            line-height: 1;
-        }
-
+        
         /* --- State Changes --- */
-        .game-container.solved .input-text,
-        .game-container.solved #given-letters {
-            font-weight: var(--font-weight-medium);
+        .game-container.solved .word-input {
+            font-weight: var(--font-weight-semibold); /* Use semibold for a more noticeable bold effect */
         }
         
         /* --- Controls --- */
@@ -120,23 +101,21 @@
             font-size: 1em;
             font-weight: var(--font-weight-semibold);
             background-color: var(--color-white);
-            color: var(--color-text-default); /* Explicitly set color for iOS */
+            color: var(--color-text-default);
             padding: 12px 24px;
             border: none;
             border-radius: 8px;
             cursor: pointer;
             transition: transform 0.2s ease, box-shadow 0.2s ease;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            -webkit-tap-highlight-color: transparent; /* Remove tap highlight on iOS */
+            -webkit-tap-highlight-color: transparent;
         }
 
-        /* Tap feedback for all devices */
         .button:active {
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             transform: translateY(1px);
         }
 
-        /* Hover feedback only for devices that support it */
         @media (hover: hover) {
             .button:hover {
                 box-shadow: 0 7px 14px rgba(0,0,0,0.1);
@@ -148,9 +127,30 @@
         @media (max-width: 600px) {
             .title {
                 font-size: 2.5em;
+                margin-bottom: 40px;
             }
-            .input-text, #given-letters {
+            .word-input {
                 font-size: 1.5em; 
+            }
+            .game-container {
+                margin-bottom: 40px;
+            }
+            .controls {
+                flex-direction: column; 
+                align-items: center; 
+                gap: 12px; 
+            }
+            .button {
+                width: 90%; 
+                max-width: 280px; 
+            }
+        }
+        @media (max-width: 360px) {
+            .title {
+                font-size: 2em;
+            }
+             .word-input {
+                font-size: 1.3em; 
             }
         }
     </style>
@@ -160,9 +160,7 @@
     <h1 class="title">KDOO</h1>
 
     <div class="game-container">
-        <input type="text" id="input-before" class="input-text" placeholder="">
-        <span id="given-letters"></span>
-        <input type="text" id="input-after" class="input-text" placeholder="">
+        <input type="text" id="word-input" class="word-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
     </div>
 
     <div class="controls">
@@ -173,7 +171,6 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // --- List of all available problems ---
             const problemsList = [
                 { given: "RLDW", solution: "WORLDWIDE" },
                 { given: "ETPL", solution: "MARKETPLACE" },
@@ -196,113 +193,122 @@
                 { given: "MBNA", solution: "THUMBNAIL" },
                 { given: "DTRA", solution: "SOUNDTRACK" },
                 { given: "ESKT", solution: "DESKTOP" },
-                { given: "PPOI", "solution": "APPOINT" }
+                { given: "PPOI", solution: "APPOINT" }
             ];
 
             let currentProblem = null;
             let currentProblemIndex = -1;
+            let isSolved = false;
+            let lastValidValue = ''; // To revert to if protected text is deleted
 
             // --- DOM Elements ---
             const gameContainer = document.querySelector('.game-container'); 
-            const inputBefore = document.getElementById('input-before');
-            const givenLettersSpan = document.getElementById('given-letters');
-            const inputAfter = document.getElementById('input-after');
+            const wordInput = document.getElementById('word-input');
             const newButton = document.getElementById('new-button');
             const resetButton = document.getElementById('reset-button');
             const solutionButton = document.getElementById('solution-button');
 
-            // --- Game State ---
-            let isSolved = false;
-
-            // --- Select a New Problem ---
+            // --- Game Logic ---
             function selectNewProblem() {
-                if (problemsList.length === 0) {
-                    givenLettersSpan.textContent = "Error";
-                    return;
-                }
                 let newIndex;
-                if (problemsList.length === 1) {
+                if (problemsList.length <= 1) {
                     newIndex = 0;
                 } else {
                     do {
                         newIndex = Math.floor(Math.random() * problemsList.length);
-                    } while (newIndex === currentProblemIndex && problemsList.length > 1);
+                    } while (newIndex === currentProblemIndex);
                 }
                 currentProblemIndex = newIndex;
                 currentProblem = problemsList[currentProblemIndex];
                 initializeGame();
             }
 
-            // --- Initialize Game for the currentProblem ---
             function initializeGame() {
-                if (!currentProblem) {
-                    if (problemsList.length > 0) selectNewProblem();
-                    return;
-                }
-                gameContainer.classList.remove('solved'); 
-                givenLettersSpan.textContent = currentProblem.given.toUpperCase(); 
-                
-                inputBefore.value = '';
-                inputAfter.value = '';
-                
-                inputBefore.placeholder = '...'; 
-                inputAfter.placeholder = '...';  
-                inputBefore.disabled = false;
-                inputAfter.disabled = false;
-                inputBefore.focus(); 
+                if (!currentProblem) return;
+
+                gameContainer.classList.remove('solved');
                 isSolved = false;
+                
+                const initialValue = currentProblem.given.toUpperCase();
+                wordInput.value = initialValue;
+                lastValidValue = initialValue; // Set the initial last valid value
+
+                wordInput.disabled = false;
+                wordInput.focus();
+                
+                // Set cursor position to the end
+                wordInput.setSelectionRange(initialValue.length, initialValue.length);
             }
-
-            // --- Check Input ---
+            
             function checkInput() {
-                if (!currentProblem) return; 
+                if (!currentProblem || isSolved) return;
 
-                const beforeText = inputBefore.value.toUpperCase();
-                const afterText = inputAfter.value.toUpperCase();
-                const givenText = currentProblem.given.toUpperCase(); 
+                const formedWord = wordInput.value.toUpperCase();
                 const solutionText = currentProblem.solution.toUpperCase();
-                const formedWord = beforeText + givenText + afterText;
 
                 if (formedWord === solutionText) {
-                    if (!isSolved) { 
-                        gameContainer.classList.add('solved'); 
-                        isSolved = true;
-                        inputBefore.disabled = true;
-                        inputAfter.disabled = true;
-                    }
-                } else {
-                    if (isSolved) {
-                        gameContainer.classList.remove('solved'); 
-                        isSolved = false;
-                        inputBefore.disabled = false;
-                        inputAfter.disabled = false;
-                    }
+                    gameContainer.classList.add('solved'); 
+                    isSolved = true;
+                    wordInput.disabled = true;
                 }
             }
 
-            // --- Event Listeners ---
-            inputBefore.addEventListener('input', checkInput);
-            inputAfter.addEventListener('input', checkInput);
-            newButton.addEventListener('click', selectNewProblem);
-            resetButton.addEventListener('click', () => {
-                if (currentProblem) initializeGame();
-            });
-            solutionButton.addEventListener('click', () => {
-                if (!currentProblem) return;
-                const solution = currentProblem.solution;
-                const given = currentProblem.given;
-                const indexOfGiven = solution.toUpperCase().indexOf(given.toUpperCase());
-                if (indexOfGiven !== -1) {
-                    inputBefore.value = solution.substring(0, indexOfGiven);
-                    inputAfter.value = solution.substring(indexOfGiven + given.length);
-                } else {
-                    inputBefore.value = '';
-                    inputAfter.value = solution;
+            // --- Event Listeners for Input Protection ---
+            wordInput.addEventListener('keydown', (e) => {
+                // This handler prevents deleting the protected text with backspace/delete
+                // when the cursor is right next to it.
+                if (isSolved) { e.preventDefault(); return; }
+
+                const givenText = currentProblem.given.toUpperCase();
+                const currentValue = wordInput.value.toUpperCase();
+                const protectedStart = currentValue.indexOf(givenText);
+                if (protectedStart === -1) return; // Failsafe
+                const protectedEnd = protectedStart + givenText.length;
+                
+                // Prevent backspace at the start of the text after the protected block
+                if (e.key === 'Backspace' && wordInput.selectionStart === protectedEnd && wordInput.selectionEnd === protectedEnd) {
+                    e.preventDefault();
                 }
-                checkInput(); 
+                // Prevent delete at the end of the text before the protected block
+                if (e.key === 'Delete' && wordInput.selectionStart === protectedStart && wordInput.selectionEnd === protectedStart) {
+                    e.preventDefault();
+                }
             });
 
-            // --- Start the game by selecting the first problem ---
+            wordInput.addEventListener('input', (e) => {
+                // This handler is the main guard. If the user manages to remove the
+                // protected text (e.g., via cut-paste), this reverts the change.
+                if (isSolved) return;
+
+                const givenText = currentProblem.given.toUpperCase();
+                const newValue = wordInput.value.toUpperCase();
+                const cursorPos = wordInput.selectionStart;
+
+                if (!newValue.includes(givenText)) {
+                    // The protected text was removed. Revert to the last valid state.
+                    wordInput.value = lastValidValue;
+                    // Try to restore cursor position reasonably
+                    wordInput.setSelectionRange(cursorPos, cursorPos);
+                } else {
+                    // The change was valid, so update the last valid value.
+                    lastValidValue = wordInput.value;
+                    checkInput(); // Check for solution after every valid input
+                }
+            });
+
+            // --- Control Button Listeners ---
+            newButton.addEventListener('click', selectNewProblem);
+            
+            resetButton.addEventListener('click', initializeGame);
+
+            solutionButton.addEventListener('click', () => {
+                if (!currentProblem) return;
+                wordInput.value = currentProblem.solution.toUpperCase();
+                lastValidValue = wordInput.value;
+                checkInput();
+            });
+
+            // --- Start the game ---
             selectNewProblem(); 
         });
     </script>
