@@ -4,95 +4,107 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KDOO Game</title>
+    <!-- Google Fonts: Montserrat -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
-        /* Global reset for box-sizing */
+        /* --- CSS Variables --- */
+        :root {
+            --font-primary: 'Montserrat', sans-serif;
+            --color-bg: #f8f8f0;
+            --color-text-default: #333;
+            --color-text-title: #4a4a4a;
+            --color-light-gray: #ccc;
+            --color-white: #fff;
+            --font-weight-medium: 500;
+            --font-weight-semibold: 600;
+        }
+
+        /* --- Global Reset --- */
         * {
             box-sizing: border-box;
         }
 
+        /* --- Main Layout --- */
         body {
-            background-color: #f8f8f0; /* Off-white */
-            font-family: Arial, sans-serif;
+            background-color: var(--color-bg);
+            font-family: var(--font-primary);
             display: flex;
             flex-direction: column;
-            align-items: center; /* Center children horizontally */
-            justify-content: center; /* Center children vertically */
-            min-height: 100vh; /* Ensure body takes at least full viewport height */
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
             margin: 0;
-            padding: 20px 10px; /* Padding on body for spacing from viewport edges */
-            color: #333; /* Default text color for other elements if any */
-            overflow-x: hidden; /* Prevent horizontal scrolling on body */
-            overflow-y: hidden; /* Prevent vertical scrolling on body */
+            padding: 5vh 10px 20px 10px;
+            color: var(--color-text-default);
+            overflow-x: hidden;
+        }
+        
+        .title {
+            font-size: 3em;
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-text-title);
+            margin-bottom: 80px;
+            text-transform: uppercase;
         }
 
+        /* --- Game Area --- */
         .game-container {
             display: flex;
-            align-items: baseline; /* Align items based on their text baseline */
-            justify-content: center; /* Center flex items (inputs, span) */
-            width: 100%; /* Take full available width from parent */
-            max-width: 700px; /* Optional: constrain max width on very large screens */
-            margin-bottom: 40px; /* Space between game and controls */
+            align-items: baseline;
+            justify-content: center;
+            width: 100%;
+            max-width: 700px;
+            margin-bottom: 80px;
         }
 
         .input-text {
+            font-family: var(--font-primary);
             font-size: 2.5em;
             border: none;
+            border-bottom: 3px solid transparent;
             background-color: transparent;
             outline: none;
-            padding: 5px;
-            width: auto; /* Size to content */
-            min-width: 0; /* Allow to shrink fully if needed by flexbox */
-            flex-grow: 0; /* Don't grow beyond content */
-            flex-shrink: 1; /* Allow to shrink */
-            color: #333; /* All text is dark gray by default */
-            font-weight: normal; /* Inputs are not bold initially */
-            transition: font-weight 0.3s ease; 
-            text-transform: uppercase; /* Ensure typed text is uppercase */
+            padding: 0;
+            width: auto;
+            min-width: 0;
+            transition: border-color 0.3s ease;
+            text-transform: uppercase;
         }
 
-        /* --- FIX FOR iOS --- */
-        /* Explicitly set color for disabled state to override iOS default graying */
-        .input-text:disabled {
-            color: #333;
-            -webkit-text-fill-color: #333; /* Ensures text color is applied on Safari/iOS */
-            opacity: 1; /* Prevents the browser from dimming the text */
-        }
-
-        #input-before {
-            text-align: right;
-        }
-
-        #input-after {
-            text-align: left;
-        }
+        #input-before { text-align: right; }
+        #input-after { text-align: left; }
 
         .input-text::placeholder {
-            color: #ccc;
-            text-transform: none; /* Keep placeholder as is, if needed */
+            color: var(--color-light-gray);
         }
         
         .input-text:focus {
-             caret-color: #333; /* Keep caret visible */
+             caret-color: var(--color-text-default);
+             border-bottom-color: var(--color-light-gray);
+        }
+
+        .input-text:disabled {
+            color: var(--color-text-default);
         }
 
         #given-letters {
             font-size: 2.5em;
-            font-weight: bold; /* Given letters are always dark gray and bold */
-            color: #333; /* All text is dark gray by default */
-            padding: 0 10px; /* Keep some padding */
+            padding: 0;
             user-select: none;
-            text-transform: uppercase; 
-            flex-shrink: 0; 
-            text-align: center; 
-            line-height: 1; 
+            text-transform: uppercase;
+            flex-shrink: 0;
+            line-height: 1;
         }
 
-        /* --- Style for the SOLVED state --- */
-        .game-container.solved #input-before,
-        .game-container.solved #input-after {
-            font-weight: bold; /* Input text becomes bold */
+        /* --- State Changes --- */
+        .game-container.solved .input-text,
+        .game-container.solved #given-letters {
+            font-weight: var(--font-weight-medium);
         }
         
+        /* --- Controls --- */
         .controls {
             display: flex;
             justify-content: center; 
@@ -102,71 +114,31 @@
         }
 
         .button {
-            padding: 10px 20px;
             font-size: 1em;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            background-color: #fff;
-            color: #333; 
+            font-weight: var(--font-weight-semibold);
+            background-color: var(--color-white);
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
             cursor: pointer;
-            transition: background-color 0.2s ease, box-shadow 0.2s ease;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            -webkit-appearance: none; 
-            appearance: none; 
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
         .button:hover {
-            background-color: #f0f0f0;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            box-shadow: 0 7px 14px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
         }
         
         .button:active {
-            background-color: #e0e0e0;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transform: translateY(1px);
         }
-
-        /* Mobile responsiveness adjustments */
-        @media (max-width: 600px) {
-            body {
-                padding: 15px 5px; 
-                 justify-content: center; /* Ensure centering on mobile */
-            }
-            .input-text, #given-letters {
-                font-size: 1.5em; 
-            }
-            #given-letters {
-                 padding: 0 5px; 
-            }
-            .game-container {
-                margin-bottom: 30px; /* Adjust margin for mobile */
-            }
-            
-             .controls {
-                flex-direction: column; 
-                align-items: center; 
-                gap: 10px; 
-            }
-            .button {
-                width: 90%; 
-                max-width: 280px; 
-            }
-        }
-        /* Even smaller screens adjustments */
-        @media (max-width: 360px) {
-            body {
-                padding: 10px 5px; 
-            }
-             .input-text, #given-letters {
-                font-size: 1.3em; 
-            }
-            #given-letters {
-                 padding: 0 3px;
-            }
-        }
-
     </style>
 </head>
 <body>
+
+    <h1 class="title">KDOO</h1>
 
     <div class="game-container">
         <input type="text" id="input-before" class="input-text" placeholder="">
@@ -205,7 +177,7 @@
                 { given: "MBNA", solution: "THUMBNAIL" },
                 { given: "DTRA", solution: "SOUNDTRACK" },
                 { given: "ESKT", solution: "DESKTOP" },
-                { given: "PPOI", solution: "APPOINT" }
+                { given: "PPOI", "solution": "APPOINT" }
             ];
 
             let currentProblem = null;
@@ -280,7 +252,7 @@
                         inputAfter.disabled = true;
                     }
                 } else {
-                    if (isSolved) { // If it was solved, but now it's not
+                    if (isSolved) {
                         gameContainer.classList.remove('solved'); 
                         isSolved = false;
                         inputBefore.disabled = false;
