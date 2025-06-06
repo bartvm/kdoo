@@ -1,0 +1,22 @@
+{
+  "name": "KDOO",
+  "short_name": "KDOO",
+  "description": "A simple word puzzle game where you find the missing letters.",
+  "start_url": "https://bartvm.github.io/kdoo/",
+  "display": "standalone",
+  "background_color": "#f8f8f0",
+  "theme_color": "#f8f8f0",
+  "orientation": "portrait-primary",
+    "icons": [
+        {
+            "src": "/android-chrome-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/android-chrome-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}
