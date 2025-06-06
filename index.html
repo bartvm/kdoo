@@ -147,36 +147,12 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const problemsList = [
-                { given: "RLDW", solution: "WORLDWIDE" },
-                { given: "ETPL", solution: "MARKETPLACE" },
-                { given: "UIPM", solution: "EQUIPMENT" },
-                { given: "CKGR", solution: "BACKGROUND" },
-                { given: "HNIQ", solution: "TECHNIQUE" },
-                { given: "DITU", solution: "EXPENDITURE" },
-                { given: "OTWI", solution: "NOTWITHSTANDING" },
-                { given: "LOPM", solution: "DEVELOPMENT" },
-                { given: "LTHC", solution: "HEALTHCARE" },
-                { given: "WSPA", solution: "NEWSPAPER" },
-                { given: "OWJO", solution: "BLOWJOB" },
-                { given: "HDRA", solution: "WITHDRAW" },
-                { given: "RLIA", solution: "PARLIAMENT" },
-                { given: "ADQU", solution: "HEADQUARTER" },
-                { given: "RTFO", solution: "PORTFOLIO" },
-                { given: "EDGM", solution: "ACKNOWLEDGMENT" },
-                { given: "PTCY", solution: "BANKRUPTCY" },
-                { given: "NWID", solution: "NATIONWIDE" },
-                { given: "MBNA", solution: "THUMBNAIL" },
-                { given: "DTRA", solution: "SOUNDTRACK" },
-                { given: "ESKT", solution: "DESKTOP" },
-                { given: "PPOI", solution: "APPOINT" }
-            ];
-
+        document.addEventListener('DOMContentLoaded', async () => {
+            let problemsList = [];
             let currentProblem = null;
             let currentProblemIndex = -1;
             let isSolved = false;
-            let lastValidValue = ''; // To revert to if protected text is deleted
+            let lastValidValue = '';
 
             // --- DOM Elements ---
             const gameContainer = document.querySelector('.game-container'); 
@@ -185,8 +161,30 @@
             const resetButton = document.getElementById('reset-button');
             const solutionButton = document.getElementById('solution-button');
 
+            // --- Fetch Problems List ---
+            async function loadProblems() {
+                try {
+                    const response = await fetch('problems.json');
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    problemsList = await response.json();
+                    return true;
+                } catch (error) {
+                    console.error("Could not load problems:", error);
+                    wordInput.value = "Error loading puzzles.";
+                    wordInput.disabled = true;
+                    // Disable controls if puzzles fail to load
+                    newButton.disabled = true;
+                    resetButton.disabled = true;
+                    solutionButton.disabled = true;
+                    return false;
+                }
+            }
+
             // --- Game Logic ---
             function selectNewProblem() {
+                if (problemsList.length === 0) return;
                 let newIndex;
                 if (problemsList.length <= 1) {
                     newIndex = 0;
@@ -208,12 +206,11 @@
                 
                 const initialValue = currentProblem.given.toUpperCase();
                 wordInput.value = initialValue;
-                lastValidValue = initialValue; // Set the initial last valid value
+                lastValidValue = initialValue;
 
                 wordInput.disabled = false;
                 wordInput.focus();
                 
-                // Set cursor position to the end
                 wordInput.setSelectionRange(initialValue.length, initialValue.length);
             }
             
@@ -232,52 +229,43 @@
 
             // --- Event Listeners for Input Protection ---
             wordInput.addEventListener('keydown', (e) => {
-                // This handler prevents deleting the protected text with backspace/delete
-                // when the cursor is right next to it.
                 if (isSolved) { e.preventDefault(); return; }
+                if (!currentProblem) return;
 
                 const givenText = currentProblem.given.toUpperCase();
                 const currentValue = wordInput.value.toUpperCase();
                 const protectedStart = currentValue.indexOf(givenText);
-                if (protectedStart === -1) return; // Failsafe
+                if (protectedStart === -1) return;
                 const protectedEnd = protectedStart + givenText.length;
                 
-                // Prevent backspace at the start of the text after the protected block
                 if (e.key === 'Backspace' && wordInput.selectionStart === protectedEnd && wordInput.selectionEnd === protectedEnd) {
                     e.preventDefault();
                 }
-                // Prevent delete at the end of the text before the protected block
                 if (e.key === 'Delete' && wordInput.selectionStart === protectedStart && wordInput.selectionEnd === protectedStart) {
                     e.preventDefault();
                 }
             });
 
             wordInput.addEventListener('input', (e) => {
-                // This handler is the main guard. If the user manages to remove the
-                // protected text (e.g., via cut-paste), this reverts the change.
                 if (isSolved) return;
+                if (!currentProblem) return;
 
                 const givenText = currentProblem.given.toUpperCase();
                 const newValue = wordInput.value.toUpperCase();
                 const cursorPos = wordInput.selectionStart;
 
                 if (!newValue.includes(givenText)) {
-                    // The protected text was removed. Revert to the last valid state.
                     wordInput.value = lastValidValue;
-                    // Try to restore cursor position reasonably
                     wordInput.setSelectionRange(cursorPos, cursorPos);
                 } else {
-                    // The change was valid, so update the last valid value.
                     lastValidValue = wordInput.value;
-                    checkInput(); // Check for solution after every valid input
+                    checkInput();
                 }
             });
 
             // --- Control Button Listeners ---
             newButton.addEventListener('click', selectNewProblem);
-            
             resetButton.addEventListener('click', initializeGame);
-
             solutionButton.addEventListener('click', () => {
                 if (!currentProblem) return;
                 wordInput.value = currentProblem.solution.toUpperCase();
@@ -286,7 +274,10 @@
             });
 
             // --- Start the game ---
-            selectNewProblem(); 
+            const problemsLoaded = await loadProblems();
+            if (problemsLoaded) {
+                selectNewProblem();
+            }
         });
     </script>
 </body>
